@@ -1,19 +1,19 @@
-import winston from 'winston';
-import timber from 'timber';
+var winston = require('winston');
 
-const transport = new timber.transports.HTTPS(
-  '2687_89c5c219d4f311ac:389409bb0987067a7af1e6f10f2cc4b617558df4b083223a91db01e7245726f8',
-);
-timber.install(transport);
+require('winston-papertrail').Papertrail;
 
-const log = winston.createLogger({
-  transports: [],
+var winstonPapertrail = new winston.transports.Papertrail({
+    host: 'logs6.papertrailapp.com',
+    port: 18410,
+    inlineMeta: true
+})
+
+winstonPapertrail.on('error', function (err) {
+    // Handle, report, or silently ignore connection errors and failures
 });
 
-log.add(
-  new winston.transports.Console({
-    format: winston.format.simple(),
-  }),
-);
+var log = winston.createLogger({
+    transports: [winstonPapertrail]
+});
 
 export default log;

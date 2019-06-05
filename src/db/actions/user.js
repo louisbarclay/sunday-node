@@ -16,6 +16,7 @@ import log from '../../log';
 import Story from '../models/story';
 import AuthService from '../../middleware/token-create';
 import MailService from '../../api/testMailService';
+import config from '../../config.json';
 
 mongoose.Promise = require('bluebird');
 

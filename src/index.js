@@ -94,7 +94,6 @@ initializeDb((db) => {
   // internal middleware
 
   // mongoose.model()
-  console.log('CHECK_SESSION', checkSession);
   app.use(middleware({ config, db }));
   app.use('/users', checkSession, userRouter({ config, db }));
   app.use('/stories', checkSession, storyRouter({ config, db }));
