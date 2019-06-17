@@ -27,8 +27,6 @@ const authenticated = jwt({
 });
 
 const checkSession = (req, res, next) => {
-  console.log('REQ_SESSION_AT_AUTHHHHHHHHHHHHHHHHHHHHHHHHHHHHH', req.session);
-  console.log('REQ_SESSION_USERIDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD', req.session.userId, req.sessionID);
   if (req.session && req.session.userId) {
     return next();
   } else {
