@@ -68,37 +68,16 @@ export default ({ config, db }) => {
           // Gonna have to create user 1st I believe, or do a promise create.
           await Promise.all(jobQueries);
           req.body.recipients.forEach((i) => {
-            console.log(i);
+            console.log('Users email', i);
             User.findOne({ email: i })
             .then((user1) => {
               if (user1 !== null) {
-                console.log(`User with email ${i} already in database or 'registered'`);
-                console.log(`User with email ${i} already in database or 'registered'`);
-                console.log(`User with email ${i} already in database or 'registered'`);
-                console.log(`User with email ${i} already in database or 'registered'`);
-                console.log(`User with email ${i} already in database or 'registered'`);
-                console.log(`User with email ${i} already in database or 'registered'`);
-                console.log(`User with email ${i} already in database or 'registered'`);
-                console.log(`User with email ${i} already in database or 'registered'`);
-                console.log(`User with email ${i} already in database or 'registered'`);
                 console.log(user1);
                 // Make it so only one email per person though, so not duplicate emails,
                 // else this might be bypassable below
                 // User.findOne({ email: req.body.recipients[0] });
                 req.body.writerIds.push(userId);
               } else if (user1 === null) {
-                console.log('User not found within database, so register user with email in recipients');
-                console.log('User not found within database, so register user with email in recipients');
-                console.log('User not found within database, so register user with email in recipients');
-                console.log('User not found within database, so register user with email in recipients');
-                console.log('User not found within database, so register user with email in recipients');
-                console.log('User not found within database, so register user with email in recipients');
-                console.log('User not found within database, so register user with email in recipients');
-                console.log('User not found within database, so register user with email in recipients');
-                console.log('User not found within database, so register user with email in recipients');
-                console.log('User not found within database, so register user with email in recipients');
-                console.log('User not found within database, so register user with email in recipients');
-                console.log('User not found within database, so register user with email in recipients');
                 User.create({ email: i, writerIds: [userId], timeCreated: moment().format() })
                 .then((recipUser) => {
                   console.log(`user: ${recipUser} created`);
@@ -144,7 +123,7 @@ export default ({ config, db }) => {
         res.setHeader('Content-Type', 'application/json');
         res.json(user);
       } else {
-        const err = new Error(`Dish ${req.params.dishId} not found`);
+        const err = new Error(`User ${req.params.userId} not found`);
         err.status = 404;
         return next(err);
       }
@@ -157,45 +136,46 @@ export default ({ config, db }) => {
   })
   .put((req, res, next) => {
     let userId = '';
-    let usersRecipients = [];
-    User.findByIdAndUpdate(req.params.userId, {
-      $set: req.body,
-    }, { new: true })
-    .then((user) => {
+    let promise = [];
+    let usersRecipients = req.body.recipients;
+    // Maybe reformat whole thing
+    User.findById(req.params.userId)
+    .then(async (user) => {
       if (user !== null) {
-        usersRecipients = req.body.recipients;
-        console.log('USERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR', user, user._id);
         userId = user._id;
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.json(user);
+        promise = usersRecipients.map((item) => {
+          User.findOne({ email: item })
+          .then(async (users) => {
+            if (users !== null) {
+              users.writerIds.push(userId);
+              await users.save();
+              // TODO: Fix
+              // Cause of an set header error
+            } else {
+              User.create({ email: item, writerIds: userId })
+              .then((user2) => {
+                console.log(user2);
+              })
+              .catch(err => next(err));
+            }
+          });
+        });
+        await Promise.all(promise);
+        User.findByIdAndUpdate(req.params.userId, {
+          $set: req.body,
+        }, { new: true })
+        .then((user1) => {
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json');
+          res.json(user1);
+        }, err => next(err))
+        .catch(err => next(err));
       } else {
+        console.log('user is null');
         res.status(400).send('User not found');
       }
-    }, err => next(err))
-    .then(() => {
-      usersRecipients.forEach((item) => {
-        User.findOne({ email: item })
-        .then((user) => {
-          if (user !== null) {
-            user.writerIds.push(userId);
-            res.statusCode = 200;
-            res.setHeader('Content-Type', 'application/json');
-            res.json(user);
-          } else {
-            User.create({ email: item, writerIds: userId })
-            .then((user2) => {
-              console.log(user2);
-              res.statusCode = 200;
-              res.setHeader('Content-Type', 'application/json');
-              res.json(user);
-            })
-            .catch(err => next(err));
-          }
-        });
-      });
-    })
-    .catch(err => next(err));
+    });
+    // Feel like this .then can be formatted to not give err maybe
   })
   .delete((req, res, next) => {
     User.findByIdAndRemove(req.params.userId)

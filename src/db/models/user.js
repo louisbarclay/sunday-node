@@ -13,6 +13,8 @@ const userSchema = Schema({
   lastSentSunday: String,
   sendReminder: Boolean,
   username: String,
+}, {
+  usePushEach: true,
 });
 
 userSchema.index({ name: 'text', writerIds: 'text' });

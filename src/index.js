@@ -116,10 +116,12 @@ initializeDb((db) => {
 
     // render the error page
     res.status(err.status || 500);
-    res.json({
-      message: err.message,
-      error: err,
-    });
+    if (!res) {
+      res.json({
+        message: err.message,
+        error: err,
+      });
+    }
   });
 
   // const port = process.env.PORT || 4000;
