@@ -9,3 +9,5 @@
 /src/config.json
 /src/SECRET_KEY.js
 sunday.service
+/src/auth/can.key
+/src/auth/canew.crt

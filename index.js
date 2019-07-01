@@ -41,7 +41,7 @@ app.use(morgan('dev'));
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Credentials', true);
-  res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
+  res.header('Access-Control-Allow-Origin', 'https://localhost:3000');
   res.header('Access-Control-Allowed-Methods', 'POST,GET,PUT,DELETE,PATCH,OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, Content-Type, X-Requested-With, X-HTTP-Method-Override, Accept, Authorization');
   if (req.method === 'OPTIONS') {

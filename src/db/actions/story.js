@@ -192,7 +192,6 @@ export default ({ config, db }) => {
     }, err => next(err))
     .catch(err => next(err));
   });
-
   return storyRouter;
 };
 

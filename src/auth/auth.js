@@ -150,7 +150,7 @@ export default ({ config, db }) => {
                 req.session.userId = req.user.id;
                 console.log('REQ_SESSION_AT_REDIR', req.session, 'REQ_SESSION_USER_ID', req.session.userId);
                 // return res.redirect(`http://www.publicdomain.com:3000/story-review?${query}`);
-                return res.redirect(`http://localhost:3000/home?${query}`);
+                return res.redirect(`https://localhost:3000/home?${query}`);
               });
               // res.json(token);
               // req.session.userId =
@@ -158,7 +158,7 @@ export default ({ config, db }) => {
               console.log('WORKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKS');
               req.session.userId = req.user.id;
               console.log('REQ_SESSION_AT_REDIR', req.session, 'REQ_SESSION_USER_ID', req.session.userId);
-              return res.redirect(`http://localhost:3000/home?${query}`);
+              return res.redirect(`https://localhost:3000/home?${query}`);
             }
           })
           .catch((err_1) => {

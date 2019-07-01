@@ -1,6 +1,8 @@
 import http from 'http';
 import nodemailer from 'nodemailer';
 import express from 'express';
+import https from 'https';
+import fs from 'fs';
 import morgan from 'morgan';
 import bodyParser from 'body-parser';
 import cors from 'cors';
@@ -48,8 +50,12 @@ app.use((req, res, next) => {
   next();
 });
 
-
 app.server = http.createServer(app);
+app.server = https.createServer({
+  key: fs.readFileSync('./src/auth/can.key'),
+  cert: fs.readFileSync('./src/auth/canew.crt'),
+  passphrase: 'louis-rhenier',
+}, app);
 
 // app.use(bodyParser.json());
 
@@ -77,7 +83,7 @@ app.use(morgan('dev'));
 
 app.use((req, res, next) => {
   res.header('Access-Control-Expose-Headers', 'Cache-Control', 'Content-Language', 'Content-Type', 'Expires', 'Last-Modified', 'Pragma');
-  res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
+  res.header('Access-Control-Allow-Origin', 'https://localhost:3000');
   res.header('Access-Control-Allow-Credentials', true);
   res.header('Access-Control-Allow-Methods', 'POST,GET,PUT,DELETE,PATCH,OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, Content-Type, X-Requested-With, X-HTTP-Method-Override, Accept, Authorization');
