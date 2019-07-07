@@ -176,7 +176,34 @@ export default ({ config, db }) => {
         console.log('execute resize error:', err);
       });
     }
-    execute();
+    if (image.length > 0) {
+      execute();
+    }
+    else {
+      User.findOne({ email: req.body.email })
+      .then(async (user) => {
+        if (user !== null) {
+          req.body.idOfCreator = user._id;
+              // console.log(req.body.text);
+          Story.findOne({ idOfCreator: user._id })
+          .then(async (storyExist) => {
+            if (storyExist !== null) {
+              res.status(400).send('User already has a pending story for this Sunday');
+            } else {
+              Story.create(req.body)
+              .then((story) => {
+                res.statusCode = 200;
+                res.setHeader('Content-Type', 'application/json');
+                res.json(story);
+              }, err => next(err))
+              .catch(err => next(err));
+            }
+          });
+        } else {
+          res.status(400).send('User not found');
+        }
+      });
+    }
   })
   .delete((req, res, next) => {
     Story.findByIdAndRemove(req.params.storyId)
