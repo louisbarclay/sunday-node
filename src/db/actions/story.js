@@ -73,8 +73,16 @@ export default ({ config, db }) => {
               // console.log(req.body.text);
           Story.findOne({ idOfCreator: user._id })
           .then(async (storyExist) => {
-            if (storyExist !== null) {
-              res.status(400).send('User already has a pending story for this Sunday');
+            let storyArr = [];
+            let pendingStory = false;
+            storyArr = storyExist.map((story) => {
+              if (story.weekCommencing === moment(nextSunday).format()) {
+                pendingStory = true;
+              }
+            });
+            await Promise.all(storyArr);
+            if (storyExist !== null && pendingStory === true) {
+              res.status(400).send(`${user.firstName} already has a pending story for this Sunday, you may only have 1 pending story per Sunday`);
             } else {
               let doc = new DOMParser().parseFromString(req.body.text, 'text/html');
               let k = 0;
@@ -180,15 +188,22 @@ export default ({ config, db }) => {
       execute();
     }
     else {
+      let storyArr = [];
+      let pendingStory = false;
       User.findOne({ email: req.body.email })
       .then(async (user) => {
         if (user !== null) {
           req.body.idOfCreator = user._id;
-              // console.log(req.body.text);
-          Story.findOne({ idOfCreator: user._id })
+          Story.find({ idOfCreator: user._id })
           .then(async (storyExist) => {
-            if (storyExist !== null) {
-              res.status(400).send('User already has a pending story for this Sunday');
+            storyArr = storyExist.map((story) => {
+              if (story.weekCommencing === moment(nextSunday).format()) {
+                pendingStory = true;
+              }
+            });
+            await Promise.all(storyArr);
+            if (storyExist !== null && pendingStory === true) {
+              res.status(400).send(`${user.firstName} already has a pending story for this Sunday, you may only have 1 pending story per Sunday`);
             } else {
               Story.create(req.body)
               .then((story) => {
