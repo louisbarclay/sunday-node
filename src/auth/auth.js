@@ -40,13 +40,10 @@ export default ({ config, db }) => {
         isUserReg = true;
         globalUser = list[0];
       }
-      // if (list.length) return list;
       const userInfo = new Promise((resolve, reject) => {
         resolve({ email: req.body.email, username: req.body.email, _id: mongoose.Types.ObjectId() });
         reject('failed');
-        // Now do Create.user(resolve value, list below.)
       });
-      // return User.create(req.body)
       return userInfo
       .then((list) => {
         const objArr = [];
@@ -68,7 +65,6 @@ export default ({ config, db }) => {
             <div style="text-align: center; color:#272728;"><p style="color:#272728; text-align:center;font-family:Roboto,RobotoDraft,Helvetica,Arial,sans-serif;font-size: 15px;">If the above button isn't working, you can click or copy this url and paste it into your browser:<br><a style="text-decoration:none; color:#272728" href="${config.host}/auth/me?token=${encodeURIComponent(token)}?firstName=${req.body.firstName}?lastName=${req.body.lastName}?email=${req.body.email}">${config.host}/auth/me?token=${encodeURIComponent(token)}?firstName=${req.body.firstName}?lastName=${req.body.lastName}?email=${req.body.email}</a></p>
             <p style="font-size:0px;font-family:Roboto,RobotoDraft,Helvetica,Arial,sans-serif;">String.fromCharCode(Math.floor(Math.random()*100), Math.floor(Math.random()*100), Math.floor(Math.random()*100), Math.floor(Math.random()*100))</p><div>
             `,
-            // text: `Magic link: ${config.host}/users/me?token=${encodeURIComponent(token)}`,
           });
           return token;
         } else if (globalUser.firstName === 'undefined') {
@@ -84,7 +80,6 @@ export default ({ config, db }) => {
             <div style="text-align: center; color:#272728;"><p style="color:#272728; text-align:center;font-family:Roboto,RobotoDraft,Helvetica,Arial,sans-serif;font-size: 15px;">If the above button isn't working, you can click or copy this url and paste it into your browser:<br><a style="text-decoration:none; color:#272728" href="${config.host}/auth/me?token=${encodeURIComponent(token)}?firstName=${req.body.firstName}?lastName=${req.body.lastName}?email=${req.body.email}">${config.host}/auth/me?token=${encodeURIComponent(token)}?firstName=${req.body.firstName}?lastName=${req.body.lastName}?email=${req.body.email}</a></p>
             <p style="font-size:0px;font-family:Roboto,RobotoDraft,Helvetica,Arial,sans-serif;">String.fromCharCode(Math.floor(Math.random()*100), Math.floor(Math.random()*100), Math.floor(Math.random()*100), Math.floor(Math.random()*100))</p><div>
             `,
-            // text: `Magic link: ${config.host}/users/me?token=${encodeURIComponent(token)}`,
           });
           return token;
         } else {
@@ -100,15 +95,13 @@ export default ({ config, db }) => {
             <div style="text-align: center; color:#272728;"><p style="color:#272728; text-align:center;font-family:Roboto,RobotoDraft,Helvetica,Arial,sans-serif;font-size: 15px;">If the above button isn't working, you can click or copy this url and paste it into your browser:<br><a style="text-decoration:none; color:#272728" href="${config.host}/auth/me?token=${encodeURIComponent(token)}?firstName=${req.body.firstName}?lastName=${req.body.lastName}?email=${req.body.email}">${config.host}/auth/me?token=${encodeURIComponent(token)}?firstName=${req.body.firstName}?lastName=${req.body.lastName}?email=${req.body.email}</a></p>
             <p style="font-size:0px;font-family:Roboto,RobotoDraft,Helvetica,Arial,sans-serif;">String.fromCharCode(Math.floor(Math.random()*100), Math.floor(Math.random()*100), Math.floor(Math.random()*100), Math.floor(Math.random()*100))</p><div>
             `,
-            // text: `Magic link: ${config.host}/users/me?token=${encodeURIComponent(token)}`,
           });
           return token;
         }
 
       })
-      .then((derp) => {
+      .then(() => {
         res.statusCode = 200;
-        // res.setHeader('Content-Type', 'application/json');
         res.json(req.body);
       })
       .catch(next);
@@ -119,18 +112,12 @@ export default ({ config, db }) => {
       // Split token in 2, send ~half to email, and full token to app - then compare fullToken to halftoken + secondHalfOfFullToken
       // if ===
       // authed
-      console.log('not logged?????');
     if (req.user) {
-      console.log('is logged?');
       jwt.verify(req.query.token, secretKey, (err, authorized) => {
         if (err) {
           res.status(403).send('Unauthorized access', err);
         } else {
-          // res.status(200).send('Successful registration', authorized);
-          // User.create()
           const fullUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
-          // res.json(req.user)
-          // Do this today
           const firstName = fullUrl.slice(fullUrl.indexOf('firstName=') + 10, fullUrl.indexOf('?lastName'));
           const lastName = fullUrl.slice(fullUrl.indexOf('lastName=') + 9, fullUrl.indexOf('?email'));
           const email = fullUrl.slice(fullUrl.indexOf('email') + 6, fullUrl.length);
@@ -143,21 +130,15 @@ export default ({ config, db }) => {
           });
           User.findOne({ email })
           .then((user) => {
-            console.log('BODYYYYYYYYYYYYYYYYYYYYYYYYYYYAAAAAAAA');
             if (user === null) {
               User.create({ _id: req.user.id, username: email, firstName, lastName, email, timeCreated: moment().format() })
               .then((user) => {
                 req.session.userId = req.user.id;
                 console.log('REQ_SESSION_AT_REDIR', req.session, 'REQ_SESSION_USER_ID', req.session.userId);
-                // return res.redirect(`http://www.publicdomain.com:3000/story-review?${query}`);
                 return res.redirect(`https://localhost:3000/home?${query}`);
               });
-              // res.json(token);
-              // req.session.userId =
             } else {
-              console.log('WORKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKS');
               req.session.userId = req.user.id;
-              console.log('REQ_SESSION_AT_REDIR', req.session, 'REQ_SESSION_USER_ID', req.session.userId);
               return res.redirect(`https://localhost:3000/home?${query}`);
             }
           })
@@ -172,7 +153,6 @@ export default ({ config, db }) => {
     .status(401)
     .send({ message: 'not authenticated' });
     }
-    // Handle retrieving user, I think this is login and post is sign up;
   });
 
   return authRouter;
