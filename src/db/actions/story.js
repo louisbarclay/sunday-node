@@ -71,7 +71,7 @@ export default ({ config, db }) => {
         if (user !== null) {
           req.body.idOfCreator = user._id;
               // console.log(req.body.text);
-          Story.findOne({ idOfCreator: user._id })
+          Story.find({ idOfCreator: user._id })
           .then(async (storyExist) => {
             let storyArr = [];
             let pendingStory = false;
@@ -88,10 +88,11 @@ export default ({ config, db }) => {
               let k = 0;
               const promise = Object.keys(doc.getElementsByTagName('img')).map(async function (img) {
                 Object.keys(doc.getElementsByTagName('img')).forEach((key) => {
+                  // This was very tough to get to work
                   // Basically, we're searching through the img element and searching for the key's we're interested
                   if (isNaN(parseInt(key)) === true) {
                     // If it's not a number, then we're not interested in it as it doesn't contain the attributes we need to change the src values of the img
-                    console.log(`Unwanted key: ${key}`);
+                    // console.log(`Unwanted key: ${key}`);
                   }
                   else {
                     if (doc.getElementsByTagName('img')[key].getAttribute('class').indexOf('imageClass') >= 0 && k < uploadedImages.length) {
@@ -186,8 +187,7 @@ export default ({ config, db }) => {
     }
     if (image.length > 0) {
       execute();
-    }
-    else {
+    } else {
       let storyArr = [];
       let pendingStory = false;
       User.findOne({ email: req.body.email })
@@ -196,6 +196,7 @@ export default ({ config, db }) => {
           req.body.idOfCreator = user._id;
           Story.find({ idOfCreator: user._id })
           .then(async (storyExist) => {
+            console.log(storyExist.length);
             storyArr = storyExist.map((story) => {
               if (story.weekCommencing === moment(nextSunday).format()) {
                 pendingStory = true;

@@ -147,8 +147,12 @@ export default ({ config, db }) => {
           User.findOne({ email: item })
           .then(async (users) => {
             if (users !== null) {
-              users.writerIds.push(userId);
-              await users.save();
+              if (users.writerIds.indexOf(userId) === -1) {
+                users.writerIds.push(userId);
+                await users.save();
+              } else {
+                // Recipient user already has that user as a writer
+              }
               // TODO: Fix
               // Cause of an set header error
             } else {
