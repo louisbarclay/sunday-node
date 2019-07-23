@@ -142,7 +142,7 @@ export default ({ config, db }) => {
     User.findById(req.params.userId)
     .then(async (user) => {
       if (user !== null) {
-        userId = user._id;
+        userId = user._id.toHexString();
         promise = usersRecipients.map((item) => {
           User.findOne({ email: item })
           .then(async (users) => {
