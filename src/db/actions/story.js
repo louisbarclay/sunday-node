@@ -4,26 +4,17 @@
 /* eslint-disable import/prefer-default-export */
 
 import express from 'express';
-import mongoose from 'mongoose';
 import moment from 'moment';
-import sizeOf from 'image-size';
 import crypto from 'crypto';
-import jwt from 'jsonwebtoken';
-import nodemailer from 'nodemailer';
-import sharp from 'sharp';
-// import cors from 'cors';
 import bodyParser from 'body-parser';
 import log from '../../log';
 import Story from '../models/story';
 import config from '../../config.json';
 import MailService from '../../api/testMailService';
 import User from '../models/user';
-import { deleteFile, uploadAttachment } from '../../mail/attachments';
-import attach from 'timber/dist/utils/attach';
+import { uploadAttachment } from '../../mail/attachments';
 
 const DOMParser = require('xmldom').DOMParser;
-
-// main().catch(console.error);
 
 export default ({ config, db }) => {
   const nextSunday = moment().endOf('week')
@@ -33,12 +24,7 @@ export default ({ config, db }) => {
   const storyRouter = express.Router();
   storyRouter.use(bodyParser.json());
 
-  // Add authentication, maybe Cors.
-
-  // /stories
-
   storyRouter.route('/')
-  // .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
   .get((req, res, next) => {
     Story.find({})
     .then((stories) => {
@@ -48,11 +34,6 @@ export default ({ config, db }) => {
     }, err => next(err))
     .catch(err => next(err));
   })
-
-  // Some fields are not required which
-  // may seem like they should be
-
-  // Configure timeCreated and WeekCommencing keys.
 
   .post((req, res, next) => {
     let image = req.body.images;
@@ -70,7 +51,6 @@ export default ({ config, db }) => {
       .then(async (user) => {
         if (user !== null) {
           req.body.idOfCreator = user._id;
-              // console.log(req.body.text);
           Story.find({ idOfCreator: user._id })
           .then(async (storyExist) => {
             let storyArr = [];
@@ -92,7 +72,6 @@ export default ({ config, db }) => {
                   // Basically, we're searching through the img element and searching for the key's we're interested
                   if (isNaN(parseInt(key)) === true) {
                     // If it's not a number, then we're not interested in it as it doesn't contain the attributes we need to change the src values of the img
-                    // console.log(`Unwanted key: ${key}`);
                   }
                   else {
                     if (doc.getElementsByTagName('img')[key].getAttribute('class').indexOf('imageClass') >= 0 && k < uploadedImages.length) {
@@ -137,7 +116,6 @@ export default ({ config, db }) => {
         const cryptoImgId = crypto.randomBytes(10).toString('hex');
         // Set the storyImgFileName correctly
         storyImgFileName = `${cryptoImgId}${idOfUploader.toString()}.png`;
-        console.log(storyImgFileName);
         uploadedImages.push(storyImgFileName);
         // Upload the image
         Promise.resolve(uploadAttachment(outputBuffer, `${storyImgFileName}`))
@@ -196,7 +174,6 @@ export default ({ config, db }) => {
           req.body.idOfCreator = user._id;
           Story.find({ idOfCreator: user._id })
           .then(async (storyExist) => {
-            console.log(storyExist.length);
             storyArr = storyExist.map((story) => {
               if (story.weekCommencing === moment(nextSunday).format()) {
                 pendingStory = true;
@@ -235,6 +212,53 @@ export default ({ config, db }) => {
     }, err => next(err))
     .catch(err => next(err));
   });
+
+  // ------storyId------
+
+  storyRouter.route('/:storyId')
+  .get((req, res, next) => {
+    Story.findById(req.params.storyId)
+    .then((story) => {
+      if (story !== null) {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(story);
+      } else {
+        res.status(400).send('Story not found');
+      }
+    }, err => next(err))
+    .catch(err => next(err));
+  })
+  .put((req, res, next) => {
+    Story.findByIdAndUpdate(req.params.storyId, {
+      $set: req.body,
+    }, { new: true })
+    .then((story) => {
+      if (story !== null) {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(story);
+      } else {
+        res.status(400).send('Story not found');
+      }
+    }, err => next(err))
+    .catch(err => next(err));
+  })
+  .delete((req, res, next) => {
+    Story.findByIdAndRemove(req.params.storyId)
+    .then((resp) => {
+      if (resp !== null) {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json({});
+      }
+      else {
+        res.status(400).send('Story not found');
+      }
+    }, err => next(err))
+    .catch(err => next(err));
+  });
+
   return storyRouter;
 };
 

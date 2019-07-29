@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import crypto from 'crypto';
 import fs from 'fs';
 import htmlToText from 'html-to-text';
@@ -64,7 +65,6 @@ const reminderSchedule = schedule.scheduleJob(`0 ${sundayHourOfDay} * * 5`, () =
 });
 
 async function reminderSend() {
-  console.log('Started reminderSend');
   try {
     const findAll = await User.find({});
     await Promise.all(
@@ -134,7 +134,6 @@ async function findEmail(email, params) {
   let foundId = false;
   allUsers.forEach((item) => {
     if (!foundId && standardise(item.email) === standardise(email)) {
-      // console.log(`FOUND ${item.email}`);
       foundId = item._id;
     }
   });
@@ -760,7 +759,6 @@ async function processMail(mail) {
             let matchString = advancedReplyParser(mail.text);
             // Strip out signature
             matchString = parseWithTalon(matchString).text;
-            // console.log(`Match string:\n${matchString}`);
             // Take last 100 characters of reply
             matchString = matchString.substr(matchString.length - 100);
             // Take out all whitespaces and split into array, one item per character
@@ -784,7 +782,6 @@ async function processMail(mail) {
               ignoreImage: true,
               hideLinkHrefIfSameAsText: true,
             });
-            // console.log(storyText);
             // Find the regex in text
             const matches = storyText.match(matchRegex);
             if (matches) {
@@ -952,7 +949,6 @@ async function processMail(mail) {
 
         // Turn story text into array for inserting into template
         const storyTextArray = storyText.split(/[\n\r]/);
-        // console.log(storyTextArray); // FIXME: this is the stuff to check
 
         // Send confirmation
         sendMail(
@@ -1041,8 +1037,6 @@ function advancedReplyParser(inputText, onlyBoundaryCheck) {
     }
   });
 
-  // console.log(text);
-  // console.log(boundaryIndex);
   if (boundaryIndex) {
     text = text.substr(0, boundaryIndex);
   }

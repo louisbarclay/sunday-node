@@ -2,20 +2,12 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable import/prefer-default-export */
 import { Router } from 'express';
-import querystring from 'querystring';
-import session from 'express-session';
 import Joi from 'joi';
 import moment from 'moment';
-import nodemailer from 'nodemailer';
 import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
-import jwt from 'jsonwebtoken';
-import passport from 'passport';
 import User from '../models/user';
 import log from '../../log';
-import Story from '../models/story';
-import AuthService from '../../middleware/token-create';
-import MailService from '../../api/testMailService';
 import config from '../../config.json';
 
 mongoose.Promise = require('bluebird');
@@ -52,8 +44,6 @@ export default ({ config, db }) => {
             jobQueries.push(
               User.create(req.body)
               .then((user2) => {
-                console.log('not again');
-                console.log(user2);
                 userId = user2._id;
                 res.statusCode = 200;
                 res.setHeader('Content-Type', 'application/json');
@@ -68,11 +58,9 @@ export default ({ config, db }) => {
           // Gonna have to create user 1st I believe, or do a promise create.
           await Promise.all(jobQueries);
           req.body.recipients.forEach((i) => {
-            console.log('Users email', i);
             User.findOne({ email: i })
             .then((user1) => {
               if (user1 !== null) {
-                console.log(user1);
                 // Make it so only one email per person though, so not duplicate emails,
                 // else this might be bypassable below
                 // User.findOne({ email: req.body.recipients[0] });
@@ -80,16 +68,13 @@ export default ({ config, db }) => {
               } else if (user1 === null) {
                 User.create({ email: i, writerIds: [userId], timeCreated: moment().format() })
                 .then((recipUser) => {
-                  console.log(`user: ${recipUser} created`);
                   req.body.writerIds.push(userId);
                 });
               } else {
-                console.log('unhandled exception');
               }
             });
           });
         } else {
-          console.log('user exists');
           res.status(400).send('User already registered, can\'t send 2 stories');
         }
       } catch (error) {
@@ -158,7 +143,6 @@ export default ({ config, db }) => {
             } else {
               User.create({ email: item, writerIds: userId })
               .then((user2) => {
-                console.log(user2);
               })
               .catch(err => next(err));
             }
@@ -175,7 +159,6 @@ export default ({ config, db }) => {
         }, err => next(err))
         .catch(err => next(err));
       } else {
-        console.log('user is null');
         res.status(400).send('User not found');
       }
     });
@@ -221,25 +204,15 @@ export default ({ config, db }) => {
         req.body.recipients.map((recip) => {
           User.find({ email: recip }, '_id')
           .then((recipUser) => {
-            console.log(recipUser.length);
             if (recipUser !== null && recipUser.length > 0) {
-              // console.log(recipUser[0]._id);
               // If user is found, push their id into writerIds
-              // req.body = {};
-              console.log(recipUser[0]._id);
               req.body.writerIds.push(recipUser[0]._id);
-              console.log(req.body);
               // Push user to writerId
             } else {
               // If user is not found - create user and then push to writerId
               User.create({ email: recip, timeCreated: moment().format() })
               .then((newRecipUser) => {
-                // console.log(newRecipUser);
-                // console.log(newRecipUser._id);
-                // req.body = {};
-                console.log(newRecipUser._id);
                 req.body.writerIds.push(newRecipUser._id);
-                console.log(req.body);
               });
             }
           }).catch((err) => {
@@ -253,8 +226,6 @@ export default ({ config, db }) => {
           }, { new: true })
           .then(() => {
             if (user !== null) {
-              console.log('recip length', req.body.recipients.length);
-              // console.log('derp', derp);
               res.statusCode = 200;
               res.setHeader('Content-Type', 'application/json');
               res.json(user.writerIds);
@@ -271,26 +242,15 @@ export default ({ config, db }) => {
     }, err => next(err))
     .catch(err => next(err));
   })
-  //  *** --- DO PUT HERE --- ***
-  // Leave for later, maybe push logged in user's id into the writerIds array
-  /* .post((req, res, next) => {
-    User.findById(req.params.userId)
-    .then((user) => {
-
-    });
-  });
-  */
   .put((req, res, next) => {
     res.statusCode = 403;
     res.end(`PUT operation not supported on /users/${req.params.userId}/writerIds`);
   });
-  // Possible delete, awaiting query.
   userRouter.route('/:userId/writerIds/:writerId')
   .get((req, res, next) => {
     User.findById(req.params.userId)
     .then((user) => {
       if (user !== null && User.findById(req.params.writerId) !== null) {
-        console.log(user);
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
         res.json(req.params.writerId);
@@ -313,7 +273,6 @@ export const deleteAllUsers = () => {
       if (err) {
         return log.info(err);
       }
-      // removed!
     });
   } else {
     log.info('Cannot delete all users unless in dev mode');

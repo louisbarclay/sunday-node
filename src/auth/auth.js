@@ -34,9 +34,7 @@ export default ({ config, db }) => {
     return User
     .find({ email: req.body.email })
     .then((list) => {
-      console.log('LIST', list);
       if (list.length > 0) {
-        console.log(list);
         isUserReg = true;
         globalUser = list[0];
       }
@@ -134,7 +132,6 @@ export default ({ config, db }) => {
               User.create({ _id: req.user.id, username: email, firstName, lastName, email, timeCreated: moment().format() })
               .then((user) => {
                 req.session.userId = req.user.id;
-                console.log('REQ_SESSION_AT_REDIR', req.session, 'REQ_SESSION_USER_ID', req.session.userId);
                 return res.redirect(`https://localhost:3000/home?${query}`);
               });
             } else {
