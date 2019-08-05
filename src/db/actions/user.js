@@ -7,8 +7,10 @@ import moment from 'moment';
 import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import User from '../models/user';
+import Story from '../models/story';
 import log from '../../log';
 import config from '../../config.json';
+import MailService from '../../api/testMailService';
 
 mongoose.Promise = require('bluebird');
 
@@ -165,17 +167,51 @@ export default ({ config, db }) => {
     // Feel like this .then can be formatted to not give err maybe
   })
   .delete((req, res, next) => {
+    // Problem is, I wanted to confirm account deletion by email, but you cannot call a method from a link, however, by default it's a get so the easiest way to do it was 
+    // to change the delete of /users/:userId to the get of /users/:userId/delete
+  })
+  .patch((req, res, next) => {
+    MailService.create({
+      from: '"Sunday" <write@sundaystori.es>', // sender address
+      to: req.body.email, // list of receivers
+      subject: 'Confirm Deletion', // Subject line
+      html: `
+      <h1 style="font-size:45px;font-family: 'Times New Roman', Times, serif;padding:15px; text-align:center;">Sunday Stories</h1>
+      <h2 style="color:#272728; text-align:center;font-family:Roboto,RobotoDraft,Helvetica,Arial,sans-serif;">Confirm the deletion of your account by clicking this link:</h2>
+      <p style="margin-top:0;margin-bottom:20px;text-align:center; font-family:Roboto,RobotoDraft,Helvetica,Arial,sans-serif;">
+      <a target="_blank" style="color:#ffffff;text-decoration:none;display:inline-block;height:38px;line-height:38px;padding-top:0;padding-right:24px;padding-bottom:0;padding-left:24px;border:0;outline:0;background-color:#272728;font-size:14px;font-style:normal;font-weight:400;text-align:center;white-space:nowrap;border-radius:4px;margin-top:35px;margin-bottom:35px" href="${config.host}/user/${req.params.userId}/delete">Delete Your Account</a></p>
+      <div style="text-align: center; color:#272728;"><p style="color:#272728; text-align:center;font-family:Roboto,RobotoDraft,Helvetica,Arial,sans-serif;font-size: 15px;">If the above button isn't working, you can click or copy this url and paste it into your browser:<br><a style="text-decoration:none; color:#272728" href="${config.host}/user/${req.params.userId}/delete">${config.host}/user/${req.params.userId}/delete"</a></p>
+      <p style="font-size:0px;font-family:Roboto,RobotoDraft,Helvetica,Arial,sans-serif;">String.fromCharCode(Math.floor(Math.random()*100), Math.floor(Math.random()*100), Math.floor(Math.random()*100), Math.floor(Math.random()*100))</p><div>
+      `,
+    });
+  });
+
+  userRouter.route('/:userId/delete')
+  .get((req, res, next) => {
+    let promise = [];
     User.findByIdAndRemove(req.params.userId)
-    .then((resp) => {
-      if (resp !== null) {
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.json({});
-      } else {
-        res.status(400).send('User not found');
+    .then(async (response) => {
+      if (response !== null) {
+        promise = Story.find({ idOfCreator: req.params.userId })
+        .map((story) => {
+          if (story !== null) {
+            Story.findByIdAndRemove(story._id);
+          }
+        });
+        await Promise.all(promise)
+        .then((resp) => {
+          if (resp !== null) {
+            Story.findByIdAndRemove(req.params.storyId)
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.json({});
+          } else {
+            res.status(400).send('Story not found');
+          }
+        }, err => next(err))
+        .catch(err => next(err));
       }
-    }, err => next(err))
-    .catch(err => next(err));
+    });
   });
 
   // -----userid/writeIds-----

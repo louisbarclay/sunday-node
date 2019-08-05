@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-expressions */
 /* eslint-disable prefer-const */
 /* eslint-disable new-cap */
 /* eslint-disable no-underscore-dangle */
@@ -245,14 +246,22 @@ export default ({ config, db }) => {
     .catch(err => next(err));
   })
   .delete((req, res, next) => {
-    Story.findByIdAndRemove(req.params.storyId)
-    .then((resp) => {
-      if (resp !== null) {
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.json({});
-      }
-      else {
+    // This delete we'll make so that it can only delete the pending story
+    Story.findOne({ weekCommencing: moment(nextSunday).format() })
+    .then((story) => {
+      if (story !== null) {
+        Story.findByIdAndRemove(story._id)
+        .then((resp) => {
+          if (resp !== null) {
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.json({});
+          } else {
+            res.status(400).send('Story not found');
+          }
+        }, err => next(err))
+        .catch(err => next(err));
+      } else {
         res.status(400).send('Story not found');
       }
     }, err => next(err))
