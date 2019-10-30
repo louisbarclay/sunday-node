@@ -60,7 +60,7 @@
     "lodash": "^4.17.4",
     "mail-listener4": "https://github.com/lgwb89/mail-listener2",
     "moment": "^2.21.0",
-    "mongoose": "^4.13.18",
+    "mongoose": "^5.7.5",
     "mongoose-findorcreate": "^3.0.0",
     "morgan": "^1.8.0",
     "node-email-reply-parser": "^0.1.1",
