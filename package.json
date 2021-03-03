@@ -73,7 +73,7 @@
     "passport-magic-link": "^1.1.1",
     "passport-strategy": "^1.0.0",
     "planer": "^1.1.1",
-    "pug": "^2.0.1",
+    "pug": "^3.0.1",
     "resource-router-middleware": "^0.6.0",
     "s3": "^4.4.0",
     "session-file-store": "^1.2.0",
