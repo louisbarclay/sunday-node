@@ -83,7 +83,7 @@
     "universal-cookie-express": "^3.1.0",
     "winston": "^3.1.0",
     "winston-papertrail": "^1.0.5",
-    "xmldom": "^0.1.27",
+    "xmldom": "^0.5.0",
     "xoauth2": "^1.2.0"
   },
   "devDependencies": {
